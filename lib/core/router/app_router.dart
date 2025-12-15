@@ -5,6 +5,7 @@ import '../../features/shell/shell_screen.dart';
 import '../../features/herbier/herbier_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/scan/scan_screen.dart';
+import '../../features/scan/scan_result_screen.dart';
 import '../../features/species/species_detail_screen.dart';
 
 /// Configuration du routeur de l'application BioLens.
@@ -60,6 +61,15 @@ class AppRouter {
         name: 'scan',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ScanScreen(),
+      ),
+      GoRoute(
+        path: '/scan/result',
+        name: 'scanResult',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final imagePath = state.extra as String;
+          return ScanResultScreen(imagePath: imagePath);
+        },
       ),
       GoRoute(
         path: '/species/:id',

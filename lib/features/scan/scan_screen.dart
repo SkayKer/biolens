@@ -136,14 +136,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
 
   /// Navigue vers l'écran d'identification avec l'image.
   void _navigateToIdentification(File imageFile) {
-    // TODO: Implémenter la navigation vers l'écran de résultat
-    // Pour l'instant, on affiche un message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Image capturée: ${imageFile.path}'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    context.pushNamed('scanResult', extra: imageFile.path);
   }
 
   /// Affiche une erreur.

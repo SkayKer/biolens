@@ -17,7 +17,7 @@ class PlantApiService {
 
   /// Clé API PlantNet
   /// TODO: Remplacer par votre clé API PlantNet
-  static const String _apiKey = 'YOUR_PLANTNET_API_KEY';
+  static const String _apiKey = '2b10z7aqQZmiUvPHucNLpVWnO';
 
   /// Taille maximale de l'image en pixels
   static const int _maxImageSize = 1024;

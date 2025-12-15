@@ -160,7 +160,14 @@ Découvert avec BioLens 🔬
         ),
         child: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            // Vérifier s'il y a quelque chose à pop, sinon aller à l'herbier
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/herbier');
+            }
+          },
         ),
       ),
     );
@@ -347,11 +354,19 @@ Découvert avec BioLens 🔬
     );
   }
 
-  /// Boutons d'action (favori et partage).
+  /// Boutons d'action (favori, partage et suppression).
   Widget _buildActionButtons() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Bouton Supprimer
+        FloatingActionButton(
+          heroTag: 'delete',
+          onPressed: _confirmDelete,
+          backgroundColor: AppColors.surface,
+          child: const Icon(Icons.delete_outline, color: AppColors.error),
+        ),
+        const SizedBox(height: 12),
         // Bouton Favori
         FloatingActionButton(
           heroTag: 'favorite',
@@ -372,6 +387,99 @@ Découvert avec BioLens 🔬
         ),
       ],
     );
+  }
+
+  /// Affiche une popup de confirmation avant la suppression.
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            const SizedBox(width: 8),
+            Text(
+              'Supprimer la plante',
+              style: AppTypography.headlineSmall,
+            ),
+          ],
+        ),
+        content: Text(
+          'Êtes-vous sûr de vouloir supprimer "${_plant!.commonName}" de votre herbier ?\n\nCette action est irréversible.',
+          style: AppTypography.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Annuler',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Supprimer',
+              style: AppTypography.labelLarge.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _deletePlant();
+    }
+  }
+
+  /// Supprime la plante et retourne à l'herbier.
+  Future<void> _deletePlant() async {
+    if (_plant == null) return;
+
+    try {
+      // Supprimer l'image locale si elle existe
+      final imageFile = File(_plant!.imagePath);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+      }
+
+      // Supprimer de la base de données
+      await _storageService.deletePlant(_plant!.id);
+
+      if (mounted) {
+        // Afficher un message de confirmation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${_plant!.commonName} a été supprimé'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+
+        // Retourner à l'herbier
+        context.go('/herbier');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la suppression: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   /// Formate une date en français.
