@@ -289,15 +289,9 @@ class AppTheme {
     // ═══════════════════════════════════════════════════════════════════════
     textTheme: AppTypography.textTheme.copyWith(
       // Headlines - Blanc cassé
-      displayLarge: AppTypography.displayLarge.copyWith(color: _darkTextPrimary),
-      displayMedium: AppTypography.displayMedium.copyWith(color: _darkTextPrimary),
-      displaySmall: AppTypography.displaySmall.copyWith(color: _darkTextPrimary),
       headlineLarge: AppTypography.headlineLarge.copyWith(color: _darkTextPrimary),
       headlineMedium: AppTypography.headlineMedium.copyWith(color: _darkTextPrimary),
       headlineSmall: AppTypography.headlineSmall.copyWith(color: _darkTextPrimary),
-      titleLarge: AppTypography.titleLarge.copyWith(color: _darkTextPrimary),
-      titleMedium: AppTypography.titleMedium.copyWith(color: _darkTextPrimary),
-      titleSmall: AppTypography.titleSmall.copyWith(color: _darkTextSecondary),
       // Body - Gris clair pour un contraste doux
       bodyLarge: AppTypography.bodyLarge.copyWith(color: _darkTextPrimary),
       bodyMedium: AppTypography.bodyMedium.copyWith(color: _darkTextSecondary),
