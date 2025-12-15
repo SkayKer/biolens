@@ -36,6 +36,30 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.10+1
+  
+  # Navigation
+  go_router: ^14.6.2
+  
+  # Camera & Media
+  camera: ^0.11.0+2
+  image_picker: ^1.1.2
+  image: ^4.3.0
+  
+  # Network
+  http: ^1.2.2
+  
+  # Local Storage
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.5
+  
+  # Maps
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  
+  # Utilities
+  share_plus: ^10.1.4
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +71,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  
+  # Code generation for Isar
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

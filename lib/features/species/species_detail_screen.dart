@@ -1,0 +1,385 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+import '../../core/models/saved_plant.dart';
+import '../../core/services/local_storage_service.dart';
+
+/// Écran de détail d'une espèce identifiée.
+/// 
+/// Affiche la photo en grand avec une carte glissante contenant les informations.
+class SpeciesDetailScreen extends StatefulWidget {
+  /// ID de la plante dans la base de données
+  final String plantId;
+
+  const SpeciesDetailScreen({
+    super.key,
+    required this.plantId,
+  });
+
+  @override
+  State<SpeciesDetailScreen> createState() => _SpeciesDetailScreenState();
+}
+
+class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
+  /// Plante chargée depuis la base
+  SavedPlant? _plant;
+  
+  /// Indique si les données sont en cours de chargement
+  bool _isLoading = true;
+  
+  /// Indique si la plante est en favori
+  bool _isFavorite = false;
+
+  final LocalStorageService _storageService = LocalStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlant();
+  }
+
+  /// Charge les données de la plante.
+  Future<void> _loadPlant() async {
+    try {
+      final id = int.tryParse(widget.plantId);
+      if (id != null) {
+        final plant = await _storageService.getPlantById(id);
+        if (mounted) {
+          setState(() {
+            _plant = plant;
+            _isFavorite = plant?.isFavorite ?? false;
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Bascule le statut favori.
+  Future<void> _toggleFavorite() async {
+    if (_plant == null) return;
+
+    setState(() => _isFavorite = !_isFavorite);
+    await _storageService.toggleFavorite(_plant!.id);
+  }
+
+  /// Partage les informations de la plante.
+  Future<void> _sharePlant() async {
+    if (_plant == null) return;
+
+    final text = '''
+🌿 ${_plant!.commonName}
+📖 ${_plant!.scientificName}
+${_plant!.family != null ? '🏷️ Famille: ${_plant!.family}' : ''}
+${_plant!.description ?? ''}
+
+Découvert avec BioLens 🔬
+''';
+
+    await Share.share(text, subject: _plant!.commonName);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_plant == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Erreur')),
+        body: const Center(child: Text('Plante non trouvée')),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // ═══════════════════════════════════════════════════════════════════
+          // CONTENU SCROLLABLE
+          // ═══════════════════════════════════════════════════════════════════
+          CustomScrollView(
+            slivers: [
+              // ═════════════════════════════════════════════════════════════════
+              // SLIVER APP BAR avec image
+              // ═════════════════════════════════════════════════════════════════
+              SliverAppBar(
+                expandedHeight: 350,
+                pinned: true,
+                backgroundColor: AppColors.primary,
+                leading: _buildBackButton(),
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildHeaderImage(),
+                ),
+              ),
+
+              // ═════════════════════════════════════════════════════════════════
+              // CARTE D'INFORMATIONS
+              // ═════════════════════════════════════════════════════════════════
+              SliverToBoxAdapter(
+                child: _buildInfoCard(),
+              ),
+            ],
+          ),
+
+          // ═══════════════════════════════════════════════════════════════════
+          // BOUTONS D'ACTION FLOTTANTS
+          // ═══════════════════════════════════════════════════════════════════
+          Positioned(
+            bottom: 24,
+            right: 24,
+            child: _buildActionButtons(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Bouton retour stylisé.
+  Widget _buildBackButton() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+      ),
+    );
+  }
+
+  /// Image d'en-tête.
+  Widget _buildHeaderImage() {
+    final imagePath = _plant!.imagePath;
+    final imageFile = File(imagePath);
+
+    if (imageFile.existsSync()) {
+      return Image.file(
+        imageFile,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
+
+    // Placeholder si l'image n'existe pas
+    return Container(
+      color: AppColors.secondary,
+      child: const Center(
+        child: Icon(
+          Icons.local_florist,
+          size: 80,
+          color: AppColors.onPrimary,
+        ),
+      ),
+    );
+  }
+
+  /// Carte d'informations avec coins arrondis en haut.
+  Widget _buildInfoCard() {
+    return Transform.translate(
+      offset: const Offset(0, -24), // Chevauche légèrement l'image
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 400),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ═════════════════════════════════════════════════════════════════
+              // NOM COMMUN (Headline)
+              // ═════════════════════════════════════════════════════════════════
+              Text(
+                _plant!.commonName,
+                style: AppTypography.headlineLarge,
+              ),
+              const SizedBox(height: 4),
+
+              // ═════════════════════════════════════════════════════════════════
+              // NOM SCIENTIFIQUE (Italique)
+              // ═════════════════════════════════════════════════════════════════
+              Text(
+                _plant!.scientificName,
+                style: AppTypography.caption,
+              ),
+              const SizedBox(height: 16),
+
+              // ═════════════════════════════════════════════════════════════════
+              // SCORE DE FIABILITÉ
+              // ═════════════════════════════════════════════════════════════════
+              if (_plant!.identificationScore != null)
+                _buildScoreBadge(_plant!.identificationScore!),
+
+              const SizedBox(height: 24),
+
+              // ═════════════════════════════════════════════════════════════════
+              // FAMILLE BOTANIQUE
+              // ═════════════════════════════════════════════════════════════════
+              if (_plant!.family != null) ...[
+                _buildInfoRow(Icons.category, 'Famille', _plant!.family!),
+                const SizedBox(height: 12),
+              ],
+
+              // ═════════════════════════════════════════════════════════════════
+              // DATE DE DÉCOUVERTE
+              // ═════════════════════════════════════════════════════════════════
+              _buildInfoRow(
+                Icons.calendar_today,
+                'Découvert le',
+                _formatDate(_plant!.discoveryDate),
+              ),
+              const SizedBox(height: 12),
+
+              // ═════════════════════════════════════════════════════════════════
+              // LOCALISATION
+              // ═════════════════════════════════════════════════════════════════
+              if (_plant!.latitude != null && _plant!.longitude != null)
+                _buildInfoRow(
+                  Icons.location_on,
+                  'Position',
+                  '${_plant!.latitude!.toStringAsFixed(4)}, ${_plant!.longitude!.toStringAsFixed(4)}',
+                ),
+
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+
+              // ═════════════════════════════════════════════════════════════════
+              // DESCRIPTION
+              // ═════════════════════════════════════════════════════════════════
+              Text(
+                'Description',
+                style: AppTypography.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _plant!.description ?? 
+                'Aucune description disponible pour cette espèce. '
+                'Vous pouvez rechercher plus d\'informations sur Wikipedia ou dans un guide botanique.',
+                style: AppTypography.bodyMedium,
+              ),
+
+              // Espace pour les boutons flottants
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Badge affichant le score de fiabilité.
+  Widget _buildScoreBadge(double score) {
+    final percentage = (score * 100).toStringAsFixed(0);
+    final color = score >= 0.8 
+        ? AppColors.primary 
+        : score >= 0.5 
+            ? Colors.orange 
+            : AppColors.error;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            'Fiabilité: $percentage%',
+            style: AppTypography.labelMedium.copyWith(color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Ligne d'information avec icône.
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(width: 12),
+        Text(
+          '$label: ',
+          style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: AppTypography.bodyMedium,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Boutons d'action (favori et partage).
+  Widget _buildActionButtons() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Bouton Favori
+        FloatingActionButton(
+          heroTag: 'favorite',
+          onPressed: _toggleFavorite,
+          backgroundColor: _isFavorite ? AppColors.error : AppColors.surface,
+          child: Icon(
+            _isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: _isFavorite ? Colors.white : AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Bouton Partage
+        FloatingActionButton(
+          heroTag: 'share',
+          onPressed: _sharePlant,
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.share, color: Colors.white),
+        ),
+      ],
+    );
+  }
+
+  /// Formate une date en français.
+  String _formatDate(DateTime date) {
+    final months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+}
