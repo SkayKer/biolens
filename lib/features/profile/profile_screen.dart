@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -259,22 +260,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        GestureDetector(
+          onTap: () => context.push('/plants-map'),
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                _plantsWithLocation.isEmpty
+                    ? _buildEmptyMap()
+                    : _buildMap(),
+                // Overlay pour indiquer que c'est cliquable
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.fullscreen,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Voir tout',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: _plantsWithLocation.isEmpty
-              ? _buildEmptyMap()
-              : _buildMap(),
         ),
       ],
     );

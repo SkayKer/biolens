@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/shell/shell_screen.dart';
 import '../../features/herbier/herbier_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/profile/plants_map_screen.dart';
 import '../../features/scan/scan_screen.dart';
 import '../../features/scan/scan_result_screen.dart';
+import '../../features/scan/location_picker_screen.dart';
 import '../../features/species/species_detail_screen.dart';
 
 /// Configuration du routeur de l'application BioLens.
@@ -79,6 +81,18 @@ class AppRouter {
           final id = state.pathParameters['id']!;
           return SpeciesDetailScreen(plantId: id);
         },
+      ),
+      GoRoute(
+        path: '/location-picker',
+        name: 'locationPicker',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LocationPickerScreen(),
+      ),
+      GoRoute(
+        path: '/plants-map',
+        name: 'plantsMap',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PlantsMapScreen(),
       ),
     ],
   );

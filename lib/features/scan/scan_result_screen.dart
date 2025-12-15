@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import '../../core/models/plant_identification.dart';
 import '../../core/models/saved_plant.dart';
 import '../../core/services/local_storage_service.dart';
+import '../../core/services/location_service.dart';
 import '../../core/services/plant_api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -35,6 +36,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   /// Organe sélectionné pour l'identification
   String _selectedOrgan = 'leaf';
 
+  /// Coordonnées GPS de la plante
+  double? _latitude;
+  double? _longitude;
+
   /// Liste des organes disponibles
   final Map<String, String> _organs = {
     'leaf': 'Feuille',
@@ -46,6 +51,37 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   /// Services
   final PlantApiService _apiService = PlantApiService();
   final LocalStorageService _storageService = LocalStorageService();
+  final LocationService _locationService = LocationService();
+
+  @override
+  void initState() {
+    super.initState();
+    _initLocation();
+  }
+
+  /// Initialise la localisation automatiquement.
+  Future<void> _initLocation() async {
+    // Essayer d'obtenir la position GPS automatiquement
+    final position = await _locationService.getCurrentPosition();
+    if (position != null && mounted) {
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      });
+    }
+  }
+
+  /// Ouvre l'écran de sélection manuelle de localisation.
+  Future<void> _pickLocation() async {
+    final result = await context.push<Map<String, double>?>('/location-picker');
+    
+    if (result != null && mounted) {
+      setState(() {
+        _latitude = result['latitude'];
+        _longitude = result['longitude'];
+      });
+    }
+  }
 
   /// Lance l'identification de la plante
   Future<void> _identifyPlant() async {
@@ -122,7 +158,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       'plant_$timestamp$extension',
     );
 
-    // Créer et sauvegarder la plante
+    // Créer et sauvegarder la plante avec la localisation
     final plant = SavedPlant.create(
       scientificName: identification.scientificName,
       commonName: identification.displayName,
@@ -131,6 +167,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       imageUrl: identification.imageUrl,
       description: identification.description,
       identificationScore: identification.score,
+      latitude: _latitude,
+      longitude: _longitude,
     );
 
     final id = await _storageService.savePlant(plant);
@@ -254,6 +292,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
                   // Sélecteur d'organe
                   _buildOrganSelector(),
+                  const SizedBox(height: 16),
+
+                  // Sélecteur de localisation
+                  _buildLocationSelector(),
                   const SizedBox(height: 20),
 
                   // Bouton principal : Identifier
@@ -372,6 +414,72 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           }).toList(),
         ),
       ],
+    );
+  }
+
+  /// Construit le sélecteur de localisation
+  Widget _buildLocationSelector() {
+    final hasLocation = _latitude != null && _longitude != null;
+
+    return InkWell(
+      onTap: _isIdentifying ? null : _pickLocation,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasLocation ? AppColors.primary : AppColors.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: hasLocation 
+                    ? AppColors.primary.withValues(alpha: 0.1)
+                    : AppColors.textSecondary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                hasLocation ? Icons.location_on : Icons.location_off,
+                color: hasLocation ? AppColors.primary : AppColors.textSecondary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Localisation',
+                    style: AppTypography.labelMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasLocation
+                        ? '${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}'
+                        : 'Appuyez pour ajouter une localisation',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              hasLocation ? Icons.edit : Icons.add,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
