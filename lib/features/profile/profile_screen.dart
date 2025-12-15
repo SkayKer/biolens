@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/models/saved_plant.dart';
 import '../../core/services/local_storage_service.dart';
+import '../../main.dart' show themeProvider;
 import 'widgets/stat_card.dart';
 
 /// Écran Profil avec statistiques et carte des découvertes.
@@ -88,8 +89,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Utiliser la couleur de fond du thème actuel
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : AppColors.background,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
@@ -430,8 +434,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.dark_mode,
                 title: 'Mode Sombre',
                 trailing: Switch(
-                  value: false, // TODO: Implémenter
-                  onChanged: (value) {},
+                  value: themeProvider.isDarkMode(context),
+                  onChanged: (value) {
+                    themeProvider.toggleDarkMode(context);
+                  },
                   activeTrackColor: AppColors.primary,
                 ),
               ),

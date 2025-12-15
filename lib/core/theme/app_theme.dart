@@ -210,4 +210,218 @@ class AppTheme {
       ),
     ),
   );
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // THÈME SOMBRE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Thème sombre
+  static ThemeData get darkTheme => ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // SCHÉMA DE COULEURS (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    colorScheme: ColorScheme(
+      brightness: Brightness.dark,
+      primary: AppColors.secondary, // Vert sauge plus doux pour le dark
+      onPrimary: AppColors.primaryDark,
+      primaryContainer: AppColors.primaryDark,
+      onPrimaryContainer: AppColors.secondary,
+      secondary: AppColors.secondary,
+      onSecondary: AppColors.primaryDark,
+      secondaryContainer: AppColors.primaryDark.withValues(alpha: 0.3),
+      onSecondaryContainer: AppColors.secondary,
+      tertiary: AppColors.secondary,
+      onTertiary: AppColors.primaryDark,
+      error: AppColors.error,
+      onError: Colors.white,
+      surface: const Color(0xFF1E1E1E), // Gris foncé
+      onSurface: Colors.white,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // COULEUR DE FOND (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    scaffoldBackgroundColor: const Color(0xFF121212), // Noir Material
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // APP BAR (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF1E1E1E),
+      foregroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TYPOGRAPHIE (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    textTheme: AppTypography.textTheme.apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BOUTONS (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.secondary,
+        foregroundColor: AppColors.primaryDark,
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: AppTypography.labelLarge,
+      ),
+    ),
+    
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.secondary,
+        side: const BorderSide(color: AppColors.secondary, width: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: AppTypography.labelLarge,
+      ),
+    ),
+
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.secondary,
+        textStyle: AppTypography.labelLarge,
+      ),
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CARTES (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    cardTheme: CardThemeData(
+      color: const Color(0xFF2C2C2C),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // FLOATING ACTION BUTTON (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.secondary,
+      foregroundColor: AppColors.primaryDark,
+      elevation: 4,
+      shape: CircleBorder(),
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BOTTOM NAVIGATION BAR (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Color(0xFF1E1E1E),
+      selectedItemColor: AppColors.secondary,
+      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
+      elevation: 8,
+      showSelectedLabels: true,
+      showUnselectedLabels: true,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BOTTOM APP BAR (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    bottomAppBarTheme: const BottomAppBarTheme(
+      color: Color(0xFF1E1E1E),
+      elevation: 8,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INPUT DECORATION (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: const Color(0xFF2C2C2C),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.grey),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.grey),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.secondary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error),
+      ),
+      hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.grey),
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DIVIDER (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    dividerTheme: const DividerThemeData(
+      color: Colors.grey,
+      thickness: 1,
+      space: 1,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ICON (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    iconTheme: const IconThemeData(
+      color: AppColors.secondary,
+      size: 24,
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CHIP (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
+      labelStyle: AppTypography.labelMedium.copyWith(color: AppColors.secondary),
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SWITCH (Dark)
+    // ═══════════════════════════════════════════════════════════════════════
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.secondary;
+        }
+        return Colors.grey;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.secondary.withValues(alpha: 0.5);
+        }
+        return Colors.grey.withValues(alpha: 0.5);
+      }),
+    ),
+  );
 }
+

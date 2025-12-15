@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/services/local_storage_service.dart';
+
+/// Instance globale du ThemeProvider pour accès facile.
+final themeProvider = ThemeProvider();
 
 /// Point d'entrée de l'application BioLens.
 void main() async {
@@ -18,14 +22,39 @@ void main() async {
   // Initialiser le stockage local
   await LocalStorageService().initialize();
   
+  // Initialiser le provider de thème (charge la préférence sauvegardée)
+  await themeProvider.initialize();
+  
   runApp(const BioLensApp());
 }
 
 /// Widget racine de l'application BioLens.
 /// 
 /// Application de reconnaissance de plantes avec un design "Nature & Clean".
-class BioLensApp extends StatelessWidget {
+class BioLensApp extends StatefulWidget {
   const BioLensApp({super.key});
+
+  @override
+  State<BioLensApp> createState() => _BioLensAppState();
+}
+
+class _BioLensAppState extends State<BioLensApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Écouter les changements de thème
+    themeProvider.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    themeProvider.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +66,11 @@ class BioLensApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // ═══════════════════════════════════════════════════════════════════════
-      // THÈME
+      // THÈMES
       // ═══════════════════════════════════════════════════════════════════════
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeProvider.themeMode,
 
       // ═══════════════════════════════════════════════════════════════════════
       // ROUTEUR (GoRouter)
