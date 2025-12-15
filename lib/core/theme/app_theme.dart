@@ -345,7 +345,7 @@ class AppTheme {
     // ═══════════════════════════════════════════════════════════════════════
     // BOTTOM APP BAR (Dark)
     // ═══════════════════════════════════════════════════════════════════════
-    bottomAppBarTheme: const BottomAppBarTheme(
+    bottomAppBarTheme: const BottomAppBarThemeData(
       color: Color(0xFF1E1E1E),
       elevation: 8,
     ),
