@@ -24,7 +24,7 @@ jobs:
         run: flutter pub get
         
       - name : Build project
-        run : flutter pub run build_runner build
+        run : flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Analyze project
         run: flutter analyze
