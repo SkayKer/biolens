@@ -389,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 trailing: Switch(
                   value: false, // TODO: Implémenter
                   onChanged: (value) {},
-                  activeColor: AppColors.primary,
+                  activeTrackColor: AppColors.primary,
                 ),
               ),
               const Divider(height: 1),
