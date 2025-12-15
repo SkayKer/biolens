@@ -199,7 +199,7 @@ class _PlantsMapScreenState extends State<PlantsMapScreen> {
       options: MapOptions(
         initialCenter: _franceCenter,
         initialZoom: 6,
-        onTap: (_, __) {
+        onTap: (_, _) {
           // Désélectionner la plante quand on tape ailleurs
           setState(() => _selectedPlant = null);
         },
