@@ -208,7 +208,8 @@ Ce projet est sous licence MIT.
 
 ## 👨‍💻 Auteur
 
-**SkayKer** - [GitHub](https://github.com/SkayKer)
+**Evan Bodineau** - [GitHub](https://github.com/SkayKer)
+**Antonin Urbain** - [GitHub] (https://github.com/Anto85)
 
 ## 🙏 Remerciements
 
@@ -218,5 +219,3 @@ Ce projet est sous licence MIT.
 - La communauté Flutter pour les packages excellents
 
 ---
-
-*Développé avec 💚 et Flutter*
