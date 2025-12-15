@@ -100,14 +100,14 @@ class AppTheme {
     // ═══════════════════════════════════════════════════════════════════════
     // CARTES
     // ═══════════════════════════════════════════════════════════════════════
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 2,
-      shadowColor: AppColors.primary.withValues(alpha: 0.15),
+      shadowColor: AppColors.primary.withOpacity(0.15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
     ),
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -137,7 +137,7 @@ class AppTheme {
     // NAVIGATION BAR (Material 3)
     // ═══════════════════════════════════════════════════════════════════════
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.surface, 
       indicatorColor: AppColors.secondary.withValues(alpha: 0.3),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
