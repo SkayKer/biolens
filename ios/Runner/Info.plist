@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Permissions de localisation -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BioLens utilise votre position pour enregistrer le lieu de découverte de vos plantes.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>BioLens utilise votre position pour enregistrer le lieu de découverte de vos plantes.</string>
 </dict>
 </plist>

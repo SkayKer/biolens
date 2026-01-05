@@ -69,7 +69,15 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   /// Ouvre l'écran de sélection manuelle de localisation.
   Future<void> _pickLocation() async {
-    final result = await context.push<Map<String, double>?>('/location-picker');
+    // Passer les coordonnées actuelles pour afficher le marqueur
+    final extra = (_latitude != null && _longitude != null)
+        ? {'latitude': _latitude!, 'longitude': _longitude!}
+        : null;
+
+    final result = await context.push<Map<String, double>?>(
+      '/location-picker',
+      extra: extra,
+    );
 
     if (result != null && mounted) {
       setState(() {

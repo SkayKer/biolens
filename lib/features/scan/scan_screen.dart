@@ -10,7 +10,7 @@ import '../../core/theme/app_typography.dart';
 import 'widgets/viewfinder_painter.dart';
 
 /// Écran de scan avec caméra plein écran et viseur.
-/// 
+///
 /// Permet de photographier une plante pour l'identifier.
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -22,16 +22,16 @@ class ScanScreen extends StatefulWidget {
 class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   /// Contrôleur de la caméra
   CameraController? _controller;
-  
+
   /// Liste des caméras disponibles
   List<CameraDescription> _cameras = [];
-  
+
   /// Indique si la caméra est initialisée
   bool _isInitialized = false;
-  
+
   /// Indique si une capture est en cours
   bool _isCapturing = false;
-  
+
   /// Message d'erreur éventuel
   String? _errorMessage;
 
@@ -67,7 +67,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   Future<void> _initializeCamera() async {
     try {
       _cameras = await availableCameras();
-      
+
       if (_cameras.isEmpty) {
         setState(() => _errorMessage = 'Aucune caméra disponible');
         return;
@@ -87,7 +87,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
       );
 
       await _controller!.initialize();
-      
+
       if (mounted) {
         setState(() => _isInitialized = true);
       }
@@ -98,7 +98,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
 
   /// Capture une photo.
   Future<void> _capturePhoto() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) {
+    if (_controller == null ||
+        !_controller!.value.isInitialized ||
+        _isCapturing) {
       return;
     }
 
@@ -142,10 +144,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   /// Affiche une erreur.
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
     );
   }
 
@@ -216,15 +215,14 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Calculer le ratio pour remplir l'écran
-    final size = MediaQuery.of(context).size;
-    final deviceRatio = size.width / size.height;
-    final cameraRatio = _controller!.value.aspectRatio;
-
-    return Center(
-      child: Transform.scale(
-        scale: cameraRatio / deviceRatio,
-        child: Center(
+    // Utiliser SizedBox.expand avec FittedBox pour remplir l'écran
+    // tout en conservant le bon ratio d'aspect de la caméra
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: _controller!.value.previewSize?.height ?? 1,
+          height: _controller!.value.previewSize?.width ?? 1,
           child: CameraPreview(_controller!),
         ),
       ),
@@ -276,10 +274,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withValues(alpha: 0.7),
-          ],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
         ),
       ),
       child: Column(
@@ -291,17 +286,17 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
             style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 24),
-          
+
           // Boutons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // Bouton Galerie
               _buildGalleryButton(),
-              
+
               // Bouton Scanner (principal)
               _buildScannerButton(),
-              
+
               // Espace vide pour équilibrer
               const SizedBox(width: 56),
             ],
@@ -349,11 +344,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                 ),
               )
             else
-              const Icon(
-                Icons.qr_code_scanner,
-                color: Colors.white,
-                size: 24,
-              ),
+              const Icon(Icons.qr_code_scanner, color: Colors.white, size: 24),
             const SizedBox(width: 12),
             Text(
               _isCapturing ? 'Capture...' : 'Scanner',

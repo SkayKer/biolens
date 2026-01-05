@@ -10,10 +10,20 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
 /// Écran de sélection manuelle de la localisation.
-/// 
+///
 /// Permet de rechercher une adresse ou de pointer directement sur la carte.
 class LocationPickerScreen extends StatefulWidget {
-  const LocationPickerScreen({super.key});
+  /// Latitude initiale (optionnelle)
+  final double? initialLatitude;
+
+  /// Longitude initiale (optionnelle)
+  final double? initialLongitude;
+
+  const LocationPickerScreen({
+    super.key,
+    this.initialLatitude,
+    this.initialLongitude,
+  });
 
   @override
   State<LocationPickerScreen> createState() => _LocationPickerScreenState();
@@ -43,6 +53,18 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   /// Centre initial de la carte (France)
   static const LatLng _franceCenter = LatLng(46.603354, 1.888334);
+
+  @override
+  void initState() {
+    super.initState();
+    // Si des coordonnées initiales sont fournies, les utiliser
+    if (widget.initialLatitude != null && widget.initialLongitude != null) {
+      _selectedPosition = LatLng(
+        widget.initialLatitude!,
+        widget.initialLongitude!,
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -91,7 +113,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       _searchResults = [];
       _searchController.text = address.label;
     });
-    
+
     // Centrer la carte sur l'adresse
     _mapController.move(position, 15);
   }
@@ -99,7 +121,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   /// Sélectionne une position en tapant sur la carte.
   void _onMapTap(TapPosition tapPosition, LatLng position) {
     setState(() => _selectedPosition = position);
-    
+
     // Recherche inverse pour afficher l'adresse
     _reverseGeocode(position);
   }
@@ -110,7 +132,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       position.latitude,
       position.longitude,
     );
-    
+
     if (address != null && mounted) {
       _searchController.text = address.label;
     }
@@ -140,7 +162,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         foregroundColor: AppColors.onPrimary,
         title: Text(
           'Localisation',
-          style: AppTypography.headlineSmall.copyWith(color: AppColors.onPrimary),
+          style: AppTypography.headlineSmall.copyWith(
+            color: AppColors.onPrimary,
+          ),
         ),
         leading: IconButton(
           onPressed: _skipLocation,
@@ -151,7 +175,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             onPressed: _skipLocation,
             child: Text(
               'Passer',
-              style: AppTypography.labelLarge.copyWith(color: AppColors.onPrimary),
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.onPrimary,
+              ),
             ),
           ),
         ],
@@ -170,10 +196,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             child: Stack(
               children: [
                 _buildMap(),
-                
+
                 // Résultats de recherche superposés
-                if (_searchResults.isNotEmpty)
-                  _buildSearchResults(),
+                if (_searchResults.isNotEmpty) _buildSearchResults(),
               ],
             ),
           ),
@@ -211,21 +236,24 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   ),
                 )
               : _searchController.text.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchResults = []);
-                      },
-                      icon: const Icon(Icons.clear),
-                    )
-                  : null,
+              ? IconButton(
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchResults = []);
+                  },
+                  icon: const Icon(Icons.clear),
+                )
+              : null,
           filled: true,
           fillColor: AppColors.background,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -233,11 +261,15 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   /// Construit la carte.
   Widget _buildMap() {
+    // Utiliser la position sélectionnée comme centre si disponible
+    final center = _selectedPosition ?? _franceCenter;
+    final zoom = _selectedPosition != null ? 15.0 : 6.0;
+
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        initialCenter: _franceCenter,
-        initialZoom: 6,
+        initialCenter: center,
+        initialZoom: zoom,
         onTap: _onMapTap,
       ),
       children: [
@@ -289,7 +321,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             itemBuilder: (context, index) {
               final address = _searchResults[index];
               return ListTile(
-                leading: const Icon(Icons.location_on, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.location_on,
+                  color: AppColors.primary,
+                ),
                 title: Text(
                   address.label,
                   style: AppTypography.bodyMedium,
@@ -334,7 +369,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -363,7 +402,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 child: Text(
                   'Confirmer la localisation',
                   style: AppTypography.labelLarge.copyWith(
-                    color: _selectedPosition != null ? AppColors.onPrimary : AppColors.textSecondary,
+                    color: _selectedPosition != null
+                        ? AppColors.onPrimary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ),

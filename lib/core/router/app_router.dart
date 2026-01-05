@@ -11,7 +11,7 @@ import '../../features/scan/location_picker_screen.dart';
 import '../../features/species/species_detail_screen.dart';
 
 /// Configuration du routeur de l'application BioLens.
-/// 
+///
 /// Utilise GoRouter avec un ShellRoute pour la navigation principale
 /// et des routes séparées pour le scanner et les détails d'espèce.
 class AppRouter {
@@ -41,16 +41,14 @@ class AppRouter {
           GoRoute(
             path: '/herbier',
             name: 'herbier',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HerbierScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HerbierScreen()),
           ),
           GoRoute(
             path: '/profile',
             name: 'profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfileScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ProfileScreen()),
           ),
         ],
       ),
@@ -86,7 +84,14 @@ class AppRouter {
         path: '/location-picker',
         name: 'locationPicker',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const LocationPickerScreen(),
+        builder: (context, state) {
+          // Récupérer les coordonnées initiales si fournies
+          final extra = state.extra as Map<String, double>?;
+          return LocationPickerScreen(
+            initialLatitude: extra?['latitude'],
+            initialLongitude: extra?['longitude'],
+          );
+        },
       ),
       GoRoute(
         path: '/plants-map',
