@@ -55,11 +55,8 @@ class _ShellScreenState extends State<ShellScreen> {
         width: 64,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colorScheme.primary, colorScheme.primaryContainer],
-          ),
+          // Couleur pleine sans dégradé
+          color: colorScheme.primary,
           boxShadow: [
             BoxShadow(
               color: colorScheme.primary.withValues(alpha: isDark ? 0.3 : 0.4),
