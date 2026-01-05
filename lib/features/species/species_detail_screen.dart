@@ -4,22 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 import '../../core/models/saved_plant.dart';
 import '../../core/services/local_storage_service.dart';
 
 /// Écran de détail d'une espèce identifiée.
-/// 
+///
 /// Affiche la photo en grand avec une carte glissante contenant les informations.
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class SpeciesDetailScreen extends StatefulWidget {
   /// ID de la plante dans la base de données
   final String plantId;
 
-  const SpeciesDetailScreen({
-    super.key,
-    required this.plantId,
-  });
+  const SpeciesDetailScreen({super.key, required this.plantId});
 
   @override
   State<SpeciesDetailScreen> createState() => _SpeciesDetailScreenState();
@@ -28,10 +24,10 @@ class SpeciesDetailScreen extends StatefulWidget {
 class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
   /// Plante chargée depuis la base
   SavedPlant? _plant;
-  
+
   /// Indique si les données sont en cours de chargement
   bool _isLoading = true;
-  
+
   /// Indique si la plante est en favori
   bool _isFavorite = false;
 
@@ -78,7 +74,8 @@ class _SpeciesDetailScreenState extends State<SpeciesDetailScreen> {
   Future<void> _sharePlant() async {
     if (_plant == null) return;
 
-    final text = '''
+    final text =
+        '''
 🌿 ${_plant!.commonName}
 📖 ${_plant!.scientificName}
 ${_plant!.family != null ? '🏷️ Famille: ${_plant!.family}' : ''}
@@ -92,10 +89,11 @@ Découvert avec BioLens 🔬
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_plant == null) {
@@ -106,7 +104,6 @@ Découvert avec BioLens 🔬
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           // ═══════════════════════════════════════════════════════════════════
@@ -120,19 +117,16 @@ Découvert avec BioLens 🔬
               SliverAppBar(
                 expandedHeight: 350,
                 pinned: true,
-                backgroundColor: AppColors.primary,
                 leading: _buildBackButton(),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: _buildHeaderImage(),
+                  background: _buildHeaderImage(colorScheme),
                 ),
               ),
 
               // ═════════════════════════════════════════════════════════════════
               // CARTE D'INFORMATIONS
               // ═════════════════════════════════════════════════════════════════
-              SliverToBoxAdapter(
-                child: _buildInfoCard(),
-              ),
+              SliverToBoxAdapter(child: _buildInfoCard(theme, colorScheme)),
             ],
           ),
 
@@ -142,7 +136,7 @@ Découvert avec BioLens 🔬
           Positioned(
             bottom: 24,
             right: 24,
-            child: _buildActionButtons(),
+            child: _buildActionButtons(colorScheme),
           ),
         ],
       ),
@@ -174,7 +168,7 @@ Découvert avec BioLens 🔬
   }
 
   /// Image d'en-tête.
-  Widget _buildHeaderImage() {
+  Widget _buildHeaderImage(ColorScheme colorScheme) {
     final imagePath = _plant!.imagePath;
     final imageFile = File(imagePath);
 
@@ -189,31 +183,35 @@ Découvert avec BioLens 🔬
 
     // Placeholder si l'image n'existe pas
     return Container(
-      color: AppColors.secondary,
-      child: const Center(
+      color: colorScheme.secondary,
+      child: Center(
         child: Icon(
           Icons.local_florist,
           size: 80,
-          color: AppColors.onPrimary,
+          color: colorScheme.onSecondary,
         ),
       ),
     );
   }
 
   /// Carte d'informations avec coins arrondis en haut.
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(ThemeData theme, ColorScheme colorScheme) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return Transform.translate(
       offset: const Offset(0, -24), // Chevauche légèrement l'image
       child: Container(
         constraints: const BoxConstraints(minHeight: 400),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.12),
               blurRadius: 10,
-              offset: Offset(0, -2),
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -227,7 +225,9 @@ Découvert avec BioLens 🔬
               // ═════════════════════════════════════════════════════════════════
               Text(
                 _plant!.commonName,
-                style: AppTypography.headlineLarge,
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 4),
 
@@ -236,7 +236,10 @@ Découvert avec BioLens 🔬
               // ═════════════════════════════════════════════════════════════════
               Text(
                 _plant!.scientificName,
-                style: AppTypography.caption,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -244,7 +247,11 @@ Découvert avec BioLens 🔬
               // SCORE DE FIABILITÉ
               // ═════════════════════════════════════════════════════════════════
               if (_plant!.identificationScore != null)
-                _buildScoreBadge(_plant!.identificationScore!),
+                _buildScoreBadge(
+                  _plant!.identificationScore!,
+                  colorScheme,
+                  theme,
+                ),
 
               const SizedBox(height: 24),
 
@@ -252,7 +259,13 @@ Découvert avec BioLens 🔬
               // FAMILLE BOTANIQUE
               // ═════════════════════════════════════════════════════════════════
               if (_plant!.family != null) ...[
-                _buildInfoRow(Icons.category, 'Famille', _plant!.family!),
+                _buildInfoRow(
+                  Icons.category,
+                  'Famille',
+                  _plant!.family!,
+                  colorScheme,
+                  theme,
+                ),
                 const SizedBox(height: 12),
               ],
 
@@ -263,6 +276,8 @@ Découvert avec BioLens 🔬
                 Icons.calendar_today,
                 'Découvert le',
                 _formatDate(_plant!.discoveryDate),
+                colorScheme,
+                theme,
               ),
               const SizedBox(height: 12),
 
@@ -274,6 +289,8 @@ Découvert avec BioLens 🔬
                   Icons.location_on,
                   'Position',
                   '${_plant!.latitude!.toStringAsFixed(4)}, ${_plant!.longitude!.toStringAsFixed(4)}',
+                  colorScheme,
+                  theme,
                 ),
 
               const SizedBox(height: 24),
@@ -285,14 +302,18 @@ Découvert avec BioLens 🔬
               // ═════════════════════════════════════════════════════════════════
               Text(
                 'Description',
-                style: AppTypography.headlineSmall,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
-                _plant!.description ?? 
-                'Aucune description disponible pour cette espèce. '
-                'Vous pouvez rechercher plus d\'informations sur Wikipedia ou dans un guide botanique.',
-                style: AppTypography.bodyMedium,
+                _plant!.description ??
+                    'Aucune description disponible pour cette espèce. '
+                        'Vous pouvez rechercher plus d\'informations sur Wikipedia ou dans un guide botanique.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
 
               // Espace pour les boutons flottants
@@ -305,13 +326,17 @@ Découvert avec BioLens 🔬
   }
 
   /// Badge affichant le score de fiabilité.
-  Widget _buildScoreBadge(double score) {
+  Widget _buildScoreBadge(
+    double score,
+    ColorScheme colorScheme,
+    ThemeData theme,
+  ) {
     final percentage = (score * 100).toStringAsFixed(0);
-    final color = score >= 0.8 
-        ? AppColors.primary 
-        : score >= 0.5 
-            ? Colors.orange 
-            : AppColors.error;
+    final color = score >= 0.8
+        ? colorScheme.primary
+        : score >= 0.5
+        ? Colors.orange
+        : colorScheme.error;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -327,7 +352,7 @@ Découvert avec BioLens 🔬
           const SizedBox(width: 6),
           Text(
             'Fiabilité: $percentage%',
-            style: AppTypography.labelMedium.copyWith(color: color),
+            style: theme.textTheme.labelMedium?.copyWith(color: color),
           ),
         ],
       ),
@@ -335,19 +360,30 @@ Découvert avec BioLens 🔬
   }
 
   /// Ligne d'information avec icône.
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value,
+    ColorScheme colorScheme,
+    ThemeData theme,
+  ) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Icon(icon, size: 20, color: colorScheme.primary),
         const SizedBox(width: 12),
         Text(
           '$label: ',
-          style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurface,
+          ),
         ),
         Expanded(
           child: Text(
             value,
-            style: AppTypography.bodyMedium,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],
@@ -355,7 +391,7 @@ Découvert avec BioLens 🔬
   }
 
   /// Boutons d'action (favori, partage et suppression).
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(ColorScheme colorScheme) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -363,18 +399,20 @@ Découvert avec BioLens 🔬
         FloatingActionButton(
           heroTag: 'delete',
           onPressed: _confirmDelete,
-          backgroundColor: AppColors.surface,
-          child: const Icon(Icons.delete_outline, color: AppColors.error),
+          backgroundColor: colorScheme.surface,
+          child: Icon(Icons.delete_outline, color: colorScheme.error),
         ),
         const SizedBox(height: 12),
         // Bouton Favori
         FloatingActionButton(
           heroTag: 'favorite',
           onPressed: _toggleFavorite,
-          backgroundColor: _isFavorite ? AppColors.error : AppColors.surface,
+          backgroundColor: _isFavorite
+              ? colorScheme.error
+              : colorScheme.surface,
           child: Icon(
             _isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: _isFavorite ? Colors.white : AppColors.primary,
+            color: _isFavorite ? Colors.white : colorScheme.primary,
           ),
         ),
         const SizedBox(height: 12),
@@ -382,8 +420,8 @@ Découvert avec BioLens 🔬
         FloatingActionButton(
           heroTag: 'share',
           onPressed: _sharePlant,
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.share, color: Colors.white),
+          backgroundColor: colorScheme.primary,
+          child: Icon(Icons.share, color: colorScheme.onPrimary),
         ),
       ],
     );
@@ -391,40 +429,46 @@ Découvert avec BioLens 🔬
 
   /// Affiche une popup de confirmation avant la suppression.
   Future<void> _confirmDelete() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        backgroundColor: colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            Icon(Icons.warning_amber_rounded, color: colorScheme.error),
             const SizedBox(width: 8),
             Text(
               'Supprimer la plante',
-              style: AppTypography.headlineSmall,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
           ],
         ),
         content: Text(
           'Êtes-vous sûr de vouloir supprimer "${_plant!.commonName}" de votre herbier ?\n\nCette action est irréversible.',
-          style: AppTypography.bodyMedium,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'Annuler',
-              style: AppTypography.labelLarge.copyWith(
-                color: AppColors.textSecondary,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: colorScheme.error,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -432,7 +476,7 @@ Découvert avec BioLens 🔬
             ),
             child: Text(
               'Supprimer',
-              style: AppTypography.labelLarge.copyWith(color: Colors.white),
+              style: theme.textTheme.labelLarge?.copyWith(color: Colors.white),
             ),
           ),
         ],
@@ -447,6 +491,8 @@ Découvert avec BioLens 🔬
   /// Supprime la plante et retourne à l'herbier.
   Future<void> _deletePlant() async {
     if (_plant == null) return;
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     try {
       // Supprimer l'image locale si elle existe
@@ -463,7 +509,7 @@ Découvert avec BioLens 🔬
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${_plant!.commonName} a été supprimé'),
-            backgroundColor: AppColors.primary,
+            backgroundColor: colorScheme.primary,
           ),
         );
 
@@ -475,7 +521,7 @@ Découvert avec BioLens 🔬
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur lors de la suppression: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -485,8 +531,18 @@ Découvert avec BioLens 🔬
   /// Formate une date en français.
   String _formatDate(DateTime date) {
     final months = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

@@ -2,20 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
-
 /// Écran principal avec la barre de navigation personnalisée.
-/// 
+///
 /// Utilise un BottomAppBar avec encoche pour le FAB central (Scan).
 /// Les onglets Herbier et Profil sont de chaque côté.
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class ShellScreen extends StatefulWidget {
   /// Widget enfant affiché dans le corps du Scaffold
   final Widget child;
 
-  const ShellScreen({
-    super.key,
-    required this.child,
-  });
+  const ShellScreen({super.key, required this.child});
 
   @override
   State<ShellScreen> createState() => _ShellScreenState();
@@ -44,10 +40,13 @@ class _ShellScreenState extends State<ShellScreen> {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _getCurrentIndex(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: widget.child,
-      
+
       // ═══════════════════════════════════════════════════════════════════════
       // FLOATING ACTION BUTTON - Bouton Scan central proéminent
       // ═══════════════════════════════════════════════════════════════════════
@@ -56,17 +55,14 @@ class _ShellScreenState extends State<ShellScreen> {
         width: 64,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary,
-              AppColors.primaryDark,
-            ],
+            colors: [colorScheme.primary, colorScheme.primaryContainer],
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.4),
+              color: colorScheme.primary.withValues(alpha: isDark ? 0.3 : 0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -82,8 +78,8 @@ class _ShellScreenState extends State<ShellScreen> {
             'assets/icons/icon_scan.svg',
             width: 28,
             height: 28,
-            colorFilter: const ColorFilter.mode(
-              AppColors.onPrimary,
+            colorFilter: ColorFilter.mode(
+              colorScheme.onPrimary,
               BlendMode.srcIn,
             ),
           ),
@@ -99,9 +95,12 @@ class _ShellScreenState extends State<ShellScreen> {
         padding: EdgeInsets.zero,
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
-        color: AppColors.surface,
+        // Utiliser la couleur de surface du thème
+        color: colorScheme.surface,
         elevation: 8,
-        shadowColor: AppColors.primary.withValues(alpha: 0.15),
+        shadowColor: isDark
+            ? Colors.black.withValues(alpha: 0.3)
+            : colorScheme.primary.withValues(alpha: 0.15),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -139,6 +138,8 @@ class _ShellScreenState extends State<ShellScreen> {
 }
 
 /// Widget pour un élément de la barre de navigation.
+///
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class _NavBarItem extends StatelessWidget {
   final String icon;
   final String label;
@@ -154,7 +155,11 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppColors.primary : AppColors.textSecondary;
+    final colorScheme = Theme.of(context).colorScheme;
+    // Couleur sélectionnée = primary, non sélectionnée = onSurfaceVariant
+    final color = isSelected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: onTap,

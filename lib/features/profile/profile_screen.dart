@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -459,6 +458,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     themeProvider.toggleDarkMode(context);
                   },
                   activeTrackColor: colorScheme.primary,
+                  activeColor: colorScheme.onPrimary,
+                  inactiveTrackColor: colorScheme.outline.withValues(
+                    alpha: 0.5,
+                  ),
+                  inactiveThumbColor: colorScheme.onSurfaceVariant,
                 ),
               ),
               const Divider(height: 1),

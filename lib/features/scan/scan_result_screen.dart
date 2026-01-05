@@ -9,21 +9,17 @@ import '../../core/models/saved_plant.dart';
 import '../../core/services/local_storage_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/services/plant_api_service.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 
 /// Écran de résultat après la capture ou sélection d'une image.
 ///
 /// Affiche l'image capturée et permet de lancer l'identification
 /// ou de reprendre une nouvelle photo.
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class ScanResultScreen extends StatefulWidget {
   /// Chemin vers l'image à analyser
   final String imagePath;
 
-  const ScanResultScreen({
-    super.key,
-    required this.imagePath,
-  });
+  const ScanResultScreen({super.key, required this.imagePath});
 
   @override
   State<ScanResultScreen> createState() => _ScanResultScreenState();
@@ -74,7 +70,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   /// Ouvre l'écran de sélection manuelle de localisation.
   Future<void> _pickLocation() async {
     final result = await context.push<Map<String, double>?>('/location-picker');
-    
+
     if (result != null && mounted) {
       setState(() {
         _latitude = result['latitude'];
@@ -98,7 +94,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       if (!mounted) return;
 
       if (identifications.isEmpty) {
-        _showError('Aucune plante n\'a pu être identifiée. Essayez avec une autre photo.');
+        _showError(
+          'Aucune plante n\'a pu être identifiée. Essayez avec une autre photo.',
+        );
         return;
       }
 
@@ -140,14 +138,15 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _IdentificationResultsSheet(
-        identifications: identifications,
-      ),
+      builder: (context) =>
+          _IdentificationResultsSheet(identifications: identifications),
     );
   }
 
   /// Sauvegarde la plante identifiée dans l'herbier
-  Future<SavedPlant> _savePlantToHerbier(PlantIdentification identification) async {
+  Future<SavedPlant> _savePlantToHerbier(
+    PlantIdentification identification,
+  ) async {
     // Copier l'image vers le stockage local de l'app
     final imageFile = File(widget.imagePath);
     final imageBytes = await imageFile.readAsBytes();
@@ -179,10 +178,11 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   /// Affiche une erreur
   void _showError(String message) {
+    final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: colorScheme.error,
         duration: const Duration(seconds: 4),
       ),
     );
@@ -195,15 +195,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        title: Text(
-          'Résultat du scan',
-          style: AppTypography.headlineSmall.copyWith(color: AppColors.onPrimary),
-        ),
+        title: const Text('Résultat du scan'),
         leading: IconButton(
           onPressed: () => context.pop(),
           icon: const Icon(Icons.arrow_back),
@@ -221,7 +219,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -235,20 +235,22 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppColors.surface,
-                      child: const Center(
+                      color: colorScheme.surface,
+                      child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.broken_image_outlined,
                               size: 64,
-                              color: AppColors.textSecondary,
+                              color: colorScheme.onSurfaceVariant,
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               'Impossible de charger l\'image',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ],
                         ),
@@ -266,11 +268,15 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -283,8 +289,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   // Message d'instruction
                   Text(
                     'Votre photo est prête pour l\'identification',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -304,8 +310,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                     child: ElevatedButton(
                       onPressed: _isIdentifying ? null : _identifyPlant,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -313,12 +317,12 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                         elevation: 2,
                       ),
                       child: _isIdentifying
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: AppColors.onPrimary,
+                                color: colorScheme.onPrimary,
                               ),
                             )
                           : Row(
@@ -328,8 +332,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Identifier la plante',
-                                  style: AppTypography.labelLarge.copyWith(
-                                    color: AppColors.onPrimary,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: colorScheme.onPrimary,
                                   ),
                                 ),
                               ],
@@ -344,22 +348,24 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                     child: OutlinedButton(
                       onPressed: _isIdentifying ? null : _retakePhoto,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        side: const BorderSide(color: AppColors.primary),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.camera_alt_outlined, size: 24),
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            size: 24,
+                            color: colorScheme.primary,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Reprendre une photo',
-                            style: AppTypography.labelLarge.copyWith(
-                              color: AppColors.primary,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
                             ),
                           ),
                         ],
@@ -377,13 +383,16 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   /// Construit le sélecteur d'organe de la plante
   Widget _buildOrganSelector() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Qu\'est-ce qui est visible sur la photo ?',
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 8),
@@ -402,13 +411,15 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                         setState(() => _selectedOrgan = entry.key);
                       }
                     },
-              selectedColor: AppColors.primary,
+              selectedColor: colorScheme.primary,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurface,
               ),
-              backgroundColor: AppColors.background,
+              backgroundColor: colorScheme.surfaceContainerHighest,
               side: BorderSide(
-                color: isSelected ? AppColors.primary : AppColors.border,
+                color: isSelected ? colorScheme.primary : colorScheme.outline,
               ),
             );
           }).toList(),
@@ -419,6 +430,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   /// Construit le sélecteur de localisation
   Widget _buildLocationSelector() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final hasLocation = _latitude != null && _longitude != null;
 
     return InkWell(
@@ -427,10 +440,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasLocation ? AppColors.primary : AppColors.border,
+            color: hasLocation ? colorScheme.primary : colorScheme.outline,
           ),
         ),
         child: Row(
@@ -438,14 +451,16 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: hasLocation 
-                    ? AppColors.primary.withValues(alpha: 0.1)
-                    : AppColors.textSecondary.withValues(alpha: 0.1),
+                color: hasLocation
+                    ? colorScheme.primary.withValues(alpha: 0.1)
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 hasLocation ? Icons.location_on : Icons.location_off,
-                color: hasLocation ? AppColors.primary : AppColors.textSecondary,
+                color: hasLocation
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
                 size: 20,
               ),
             ),
@@ -456,8 +471,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                 children: [
                   Text(
                     'Localisation',
-                    style: AppTypography.labelMedium.copyWith(
+                    style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -465,8 +481,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                     hasLocation
                         ? '${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}'
                         : 'Appuyez pour ajouter une localisation',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -474,7 +490,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ),
             Icon(
               hasLocation ? Icons.edit : Icons.add,
-              color: AppColors.primary,
+              color: colorScheme.primary,
               size: 20,
             ),
           ],
@@ -489,24 +505,26 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 // =============================================================================
 
 /// Bottom sheet affichant les résultats d'identification
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class _IdentificationResultsSheet extends StatelessWidget {
   final List<PlantIdentification> identifications;
 
-  const _IdentificationResultsSheet({
-    required this.identifications,
-  });
+  const _IdentificationResultsSheet({required this.identifications});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.9,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
@@ -516,33 +534,33 @@ class _IdentificationResultsSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: colorScheme.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Titre
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   'Résultats de l\'identification',
-                  style: AppTypography.headlineSmall,
+                  style: theme.textTheme.headlineSmall,
                 ),
               ),
-              
+
               // Sous-titre
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Sélectionnez la plante correspondante',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Liste des résultats
               Expanded(
                 child: ListView.builder(
@@ -558,7 +576,7 @@ class _IdentificationResultsSheet extends StatelessWidget {
                   },
                 ),
               ),
-              
+
               // Bouton annuler
               SafeArea(
                 child: Padding(
@@ -569,8 +587,8 @@ class _IdentificationResultsSheet extends StatelessWidget {
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(
                         'Annuler',
-                        style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.textSecondary,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -586,6 +604,7 @@ class _IdentificationResultsSheet extends StatelessWidget {
 }
 
 /// Carte d'un résultat d'identification
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class _IdentificationResultCard extends StatelessWidget {
   final PlantIdentification identification;
   final VoidCallback onTap;
@@ -597,12 +616,13 @@ class _IdentificationResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -615,17 +635,13 @@ class _IdentificationResultCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.3),
+                  color: colorScheme.secondary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.eco,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
+                child: Icon(Icons.eco, color: colorScheme.primary, size: 28),
               ),
               const SizedBox(width: 16),
-              
+
               // Informations
               Expanded(
                 child: Column(
@@ -634,47 +650,51 @@ class _IdentificationResultCard extends StatelessWidget {
                     // Nom commun
                     Text(
                       identification.displayName,
-                      style: AppTypography.labelLarge.copyWith(
+                      style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Nom scientifique
                     Text(
                       identification.scientificName,
-                      style: AppTypography.bodySmall.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Famille
                     Text(
                       'Famille: ${identification.family}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              
+
               // Score de confiance
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: _getScoreColor(identification.score),
+                  color: _getScoreColor(identification.score, colorScheme),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   identification.scorePercentage,
-                  style: AppTypography.labelSmall.copyWith(
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -688,9 +708,9 @@ class _IdentificationResultCard extends StatelessWidget {
   }
 
   /// Retourne la couleur en fonction du score
-  Color _getScoreColor(double score) {
-    if (score >= 0.7) return AppColors.primary;
+  Color _getScoreColor(double score, ColorScheme colorScheme) {
+    if (score >= 0.7) return colorScheme.primary;
     if (score >= 0.4) return Colors.orange;
-    return AppColors.error;
+    return colorScheme.error;
   }
 }
