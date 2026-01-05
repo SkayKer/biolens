@@ -2,28 +2,27 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../../../core/models/saved_plant.dart';
 
 /// Tuile représentant une plante dans la grille de l'herbier.
-/// 
+///
 /// Affiche l'image avec un dégradé et le nom en overlay.
+/// Utilise les couleurs du thème pour s'adapter au mode sombre.
 class PlantTile extends StatelessWidget {
   /// Données de la plante
   final SavedPlant plant;
-  
+
   /// Callback au tap
   final VoidCallback? onTap;
 
-  const PlantTile({
-    super.key,
-    required this.plant,
-    this.onTap,
-  });
+  const PlantTile({super.key, required this.plant, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -31,7 +30,9 @@ class PlantTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.4)
+                  : colorScheme.primary.withValues(alpha: 0.15),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -45,7 +46,7 @@ class PlantTile extends StatelessWidget {
               // ═══════════════════════════════════════════════════════════════
               // IMAGE DE FOND
               // ═══════════════════════════════════════════════════════════════
-              _buildImage(),
+              _buildImage(colorScheme),
 
               // ═══════════════════════════════════════════════════════════════
               // DÉGRADÉ OVERLAY
@@ -78,9 +79,9 @@ class PlantTile extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.favorite,
-                      color: AppColors.error,
+                      color: colorScheme.error,
                       size: 16,
                     ),
                   ),
@@ -100,13 +101,10 @@ class PlantTile extends StatelessWidget {
                     // Nom commun
                     Text(
                       plant.commonName,
-                      style: AppTypography.labelLarge.copyWith(
+                      style: theme.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                         shadows: [
-                          const Shadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                          ),
+                          const Shadow(color: Colors.black26, blurRadius: 4),
                         ],
                       ),
                       maxLines: 2,
@@ -116,9 +114,10 @@ class PlantTile extends StatelessWidget {
                     // Nom scientifique
                     Text(
                       plant.scientificName,
-                      style: AppTypography.caption.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.white70,
                         fontSize: 11,
+                        fontStyle: FontStyle.italic,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -134,7 +133,7 @@ class PlantTile extends StatelessWidget {
   }
 
   /// Construit l'image de la plante.
-  Widget _buildImage() {
+  Widget _buildImage(ColorScheme colorScheme) {
     final imageFile = File(plant.imagePath);
 
     if (imageFile.existsSync()) {
@@ -143,22 +142,23 @@ class PlantTile extends StatelessWidget {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildPlaceholder(colorScheme),
       );
     }
 
-    return _buildPlaceholder();
+    return _buildPlaceholder(colorScheme);
   }
 
   /// Placeholder si l'image n'est pas disponible.
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ColorScheme colorScheme) {
     return Container(
-      color: AppColors.secondary,
+      color: colorScheme.secondary,
       child: Center(
         child: Icon(
           Icons.local_florist,
           size: 48,
-          color: AppColors.primary.withValues(alpha: 0.5),
+          color: colorScheme.primary.withValues(alpha: 0.5),
         ),
       ),
     );

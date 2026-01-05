@@ -21,13 +21,13 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   /// Nombre total de plantes
   int _plantCount = 0;
-  
+
   /// Dernière plante découverte
   SavedPlant? _lastDiscovery;
-  
+
   /// Plantes avec coordonnées GPS
   List<SavedPlant> _plantsWithLocation = [];
-  
+
   /// Indique si les données sont en cours de chargement
   bool _isLoading = true;
 
@@ -43,7 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadStats() async {
     try {
       await _storageService.initialize();
-      
+
       final count = await _storageService.getPlantCount();
       final lastPlant = await _storageService.getLastDiscovery();
       final plantsWithLoc = await _storageService.getPlantsWithLocation();
@@ -76,10 +76,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// Formate la dernière découverte.
   String _getLastDiscoveryText() {
     if (_lastDiscovery == null) return 'Aucune';
-    
+
     final now = DateTime.now();
     final diff = now.difference(_lastDiscovery!.discoveryDate);
-    
+
     if (diff.inDays == 0) return 'Aujourd\'hui';
     if (diff.inDays == 1) return 'Hier';
     if (diff.inDays < 7) return 'Il y a ${diff.inDays} jours';
@@ -91,9 +91,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     // Utiliser la couleur de fond du thème actuel
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : AppColors.background,
+      backgroundColor: isDark
+          ? Theme.of(context).scaffoldBackgroundColor
+          : AppColors.background,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
@@ -135,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // PARAMÈTRES
                         // ═════════════════════════════════════════════════════════
                         _buildSettingsSection(),
-                        
+
                         // Espace pour la nav bar
                         const SizedBox(height: 100),
                       ],
@@ -179,16 +181,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Nom
             Text(
               'Explorateur',
-              style: AppTypography.headlineMedium.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTypography.headlineMedium.copyWith(color: Colors.white),
             ),
             const SizedBox(height: 4),
-            
+
             // Niveau
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -209,10 +209,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Section des statistiques (3 cartes).
   Widget _buildStatsSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Statistiques', style: AppTypography.headlineSmall),
+        Text('Statistiques', style: theme.textTheme.headlineSmall),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -221,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.local_florist,
                 title: 'Plantes',
                 value: _plantCount.toString(),
-                color: AppColors.primary,
+                color: colorScheme.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -239,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.history,
                 title: 'Dernière',
                 value: _getLastDiscoveryText(),
-                color: AppColors.secondary,
+                color: colorScheme.secondary,
               ),
             ),
           ],
@@ -250,16 +253,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Section de la carte des découvertes.
   Widget _buildMapSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text('Mes découvertes', style: AppTypography.headlineSmall),
+            Text('Mes découvertes', style: theme.textTheme.headlineSmall),
             const Spacer(),
             Text(
               '${_plantsWithLocation.length} lieu${_plantsWithLocation.length > 1 ? 'x' : ''}',
-              style: AppTypography.bodySmall,
+              style: theme.textTheme.bodySmall,
             ),
           ],
         ),
@@ -272,7 +279,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.15),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.3)
+                      : colorScheme.primary.withValues(alpha: 0.15),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -281,15 +290,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             clipBehavior: Clip.antiAlias,
             child: Stack(
               children: [
-                _plantsWithLocation.isEmpty
-                    ? _buildEmptyMap()
-                    : _buildMap(),
+                _plantsWithLocation.isEmpty ? _buildEmptyMap() : _buildMap(),
                 // Overlay pour indiquer que c'est cliquable
                 Positioned(
                   right: 12,
                   bottom: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(20),
@@ -329,8 +339,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Carte vide.
   Widget _buildEmptyMap() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
-      color: AppColors.surface,
+      color: colorScheme.surface,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -338,18 +351,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               Icons.map_outlined,
               size: 48,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 8),
             Text(
               'Aucune localisation',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             Text(
               'Activez le GPS lors de vos scans',
-              style: AppTypography.bodySmall,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
             ),
           ],
         ),
@@ -360,12 +375,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// Carte avec les marqueurs.
   Widget _buildMap() {
     // Calculer le centre de la carte
-    final avgLat = _plantsWithLocation
-        .map((p) => p.latitude!)
-        .reduce((a, b) => a + b) / _plantsWithLocation.length;
-    final avgLng = _plantsWithLocation
-        .map((p) => p.longitude!)
-        .reduce((a, b) => a + b) / _plantsWithLocation.length;
+    final avgLat =
+        _plantsWithLocation.map((p) => p.latitude!).reduce((a, b) => a + b) /
+        _plantsWithLocation.length;
+    final avgLng =
+        _plantsWithLocation.map((p) => p.longitude!).reduce((a, b) => a + b) /
+        _plantsWithLocation.length;
 
     return FlutterMap(
       options: MapOptions(
@@ -412,14 +427,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Section des paramètres.
   Widget _buildSettingsSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Paramètres', style: AppTypography.headlineSmall),
+        Text('Paramètres', style: theme.textTheme.headlineSmall),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -438,7 +456,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onChanged: (value) {
                     themeProvider.toggleDarkMode(context);
                   },
-                  activeTrackColor: AppColors.primary,
+                  activeTrackColor: colorScheme.primary,
                 ),
               ),
               const Divider(height: 1),
@@ -461,10 +479,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(title, style: AppTypography.bodyLarge),
-      trailing: trailing ?? const Icon(Icons.chevron_right),
+      leading: Icon(icon, color: colorScheme.primary),
+      title: Text(
+        title,
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: colorScheme.onSurface,
+        ),
+      ),
+      trailing:
+          trailing ??
+          Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
       onTap: onTap,
     );
   }
@@ -492,11 +520,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
-          Icons.local_florist,
-          color: Colors.white,
-          size: 32,
-        ),
+        child: const Icon(Icons.local_florist, color: Colors.white, size: 32),
       ),
       children: [
         const Text(

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
-
 /// Carte de statistique pour l'écran profil.
+///
+/// Utilise les couleurs du thème pour s'adapter automatiquement
+/// au mode clair/sombre.
 class StatCard extends StatelessWidget {
   /// Icône affichée
   final IconData icon;
-  
+
   /// Titre de la statistique
   final String title;
-  
+
   /// Valeur de la statistique
   final String value;
-  
+
   /// Couleur de l'icône
   final Color color;
 
@@ -27,14 +27,21 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        // Utiliser la couleur de surface du thème
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : color.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -47,33 +54,32 @@ class StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: isDark ? 0.2 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
-          
-          // Valeur
+
+          // Valeur - utiliser la couleur de texte du thème
           Text(
             value,
-            style: AppTypography.headlineSmall.copyWith(
+            style: theme.textTheme.headlineSmall?.copyWith(
               fontSize: 16,
+              color: colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
-          
-          // Titre
+
+          // Titre - utiliser la couleur secondaire du thème
           Text(
             title,
-            style: AppTypography.bodySmall,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
