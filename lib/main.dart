@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,9 +11,23 @@ import 'core/services/local_storage_service.dart';
 /// Instance globale du ThemeProvider pour accès facile.
 final themeProvider = ThemeProvider();
 
+/// Classe pour contourner les erreurs de certificat SSL en développement.
+/// ⚠️ NE PAS UTILISER EN PRODUCTION !
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 /// Point d'entrée de l'application BioLens.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Contourner les erreurs SSL en développement
+  // ⚠️ À SUPPRIMER EN PRODUCTION !
+  HttpOverrides.global = MyHttpOverrides();
   
   // Configurer l'orientation portrait uniquement
   await SystemChrome.setPreferredOrientations([
