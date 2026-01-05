@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
@@ -458,7 +457,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     themeProvider.toggleDarkMode(context);
                   },
                   activeTrackColor: colorScheme.primary,
-                  activeColor: colorScheme.onPrimary,
+                  activeThumbColor: colorScheme.onPrimary,
                   inactiveTrackColor: colorScheme.outline.withValues(
                     alpha: 0.5,
                   ),
